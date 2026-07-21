@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 /// Tela de prática guiada em tela cheia. Regras implementadas conforme pedido:
 /// - Se o item tem tempo pré-determinado, o cronômetro conta e avança
@@ -9,6 +10,7 @@ import SwiftUI
 struct PracticeSequenceView: View {
     let sequence: YogaSequence
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
 
     @State private var currentIndex = 0
     @State private var remainingSeconds: Int = 0
@@ -42,6 +44,9 @@ struct PracticeSequenceView: View {
             }
         }
         .onAppear { setupCurrentItem() }
+        .onChange(of: isFinished) { _, finished in
+            if finished { logPracticeCompletion() }
+        }
         .onReceive(timer) { _ in
             guard !isPaused, let item = currentItem, item.hasTimer, !isFinished else { return }
             if remainingSeconds > 0 {
@@ -210,6 +215,20 @@ struct PracticeSequenceView: View {
         } else {
             isFinished = true
         }
+    }
+
+    /// Registra hoje como "dia praticado" para alimentar a aba Calendário.
+    /// Evita duplicar o registro caso a usuária já tenha praticado hoje.
+    private func logPracticeCompletion() {
+        let today = Calendar.current.startOfDay(for: Date())
+        let descriptor = FetchDescriptor<PracticeLog>(
+            predicate: #Predicate { $0.day == today }
+        )
+        let alreadyLogged = (try? modelContext.fetch(descriptor))?.isEmpty == false
+        guard !alreadyLogged else { return }
+
+        modelContext.insert(PracticeLog(day: today))
+        try? modelContext.save()
     }
 
     private func timeString(_ seconds: Int) -> String {

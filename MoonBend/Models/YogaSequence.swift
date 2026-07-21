@@ -9,17 +9,20 @@ final class YogaSequence {
     var name: String
     var imageData: Data?
     var createdAt: Date
+    /// Descrição opcional da sequência — só aparece ao abrir os detalhes, nunca nos cards.
+    var sequenceDescription: String?
 
     /// deleteRule: .cascade garante que, ao apagar a sequência, todos os
     /// SequenceItem relacionados também são apagados automaticamente.
     @Relationship(deleteRule: .cascade, inverse: \SequenceItem.sequence)
     var items: [SequenceItem] = []
 
-    init(name: String, imageData: Data? = nil) {
+    init(name: String, imageData: Data? = nil, sequenceDescription: String? = nil) {
         self.id = UUID()
         self.name = name
         self.imageData = imageData
         self.createdAt = Date()
+        self.sequenceDescription = sequenceDescription
     }
 
     /// Itens ordenados pela posição definida na criação da sequência

@@ -23,7 +23,28 @@ struct DraftSequenceItem: Identifiable, Equatable {
 final class SequenceBuilderViewModel: ObservableObject {
     @Published var name: String = ""
     @Published var imageData: Data?
+    @Published var sequenceDescription: String = ""
     @Published var items: [DraftSequenceItem] = []
+
+    /// Se presente, o fluxo está em modo de EDIÇÃO: salvar deve atualizar
+    /// essa sequência existente em vez de criar uma nova.
+    var existingSequence: YogaSequence?
+
+    /// Pré-carrega o formulário com os dados de uma sequência já existente.
+    func loadExisting(_ sequence: YogaSequence) {
+        existingSequence = sequence
+        name = sequence.name
+        imageData = sequence.imageData
+        sequenceDescription = sequence.sequenceDescription ?? ""
+        items = sequence.sortedItems.map { item in
+            DraftSequenceItem(
+                type: item.itemType,
+                pose: item.pose,
+                hasTimer: item.hasTimer,
+                durationSeconds: item.durationSeconds
+            )
+        }
+    }
 
     /// Adiciona uma pose ao final da sequência (pode ser chamada
     /// várias vezes para a mesma pose — repetição é permitida).

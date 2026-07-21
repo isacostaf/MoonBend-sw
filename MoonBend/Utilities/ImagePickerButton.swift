@@ -46,9 +46,15 @@ struct ImagePickerButton: View {
         }
         .onChange(of: selectedItem) { _, newItem in
             Task {
-                if let data = try? await newItem?.loadTransferable(type: Data.self) {
-                    imageData = data
-                }
+                guard let data = try? await newItem?.loadTransferable(type: Data.self),
+                      let uiImage = UIImage(data: data) else { return }
+
+                // CORREÇÃO: antes disso, a imagem era salva com a proporção
+                // original (retrato/paisagem), fazendo os cards ficarem
+                // distorcidos. Agora ela é sempre cortada para 1:1 (quadrado)
+                // e comprimida antes de ser guardada — nasce correta.
+                let squareImage = uiImage.croppedToSquare().resized(maxDimension: 800)
+                imageData = squareImage.jpegData(compressionQuality: 0.85)
             }
         }
     }

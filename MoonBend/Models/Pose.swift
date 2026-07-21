@@ -11,12 +11,19 @@ final class Pose {
     var imageData: Data?
     var isCustom: Bool
     var createdAt: Date
+    /// Descrição opcional da pose — só aparece ao abrir os detalhes, nunca nos cards.
+    var poseDescription: String?
+    /// Tags criadas livremente pela usuária para organizar/filtrar poses.
+    /// Uma pose pode ter quantas tags quiser.
+    var tags: [String] = []
 
-    init(name: String, imageData: Data? = nil, isCustom: Bool = true) {
+    init(name: String, imageData: Data? = nil, isCustom: Bool = true, poseDescription: String? = nil, tags: [String] = []) {
         self.id = UUID()
         self.name = name
         self.imageData = imageData
         self.isCustom = isCustom
         self.createdAt = Date()
+        self.poseDescription = poseDescription
+        self.tags = tags
     }
 }
